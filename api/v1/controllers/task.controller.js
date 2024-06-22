@@ -52,3 +52,63 @@ module.exports.detail = async (req, res) => {
 
   res.json(task);
 };
+
+// [PATCH] /api/v1/tasks/change-status/:id
+module.exports.changeStatus = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const status = req.body.status;
+
+    await Task.updateOne({
+      _id: id
+    }, {
+      status: status
+    });
+
+    res.json({
+      code: 200,
+      message: "Cập nhật trạng thái thành công!"
+    }); 
+  } catch (error) {
+    res.json({
+      code: 400,
+      message: "Không tồn tại bản ghi!"
+    });
+  }
+};
+
+// [PATCH] /api/v1/tasks/change-multi
+module.exports.changeMulti = async (req, res) => {
+  const { ids, status } = req.body;
+
+  const listStatus = ["initial", "doing", "finish", "pending", "notFinish"];
+
+  if(listStatus.includes(status)) {
+    await Task.updateMany({
+      _id: { $in: ids }
+    }, {
+      status: status
+    });
+
+    res.json({
+      code: 200,
+      message: "Đổi trạng thái thành công!"
+    });
+  } else {
+    res.json({
+      code: 400,
+      message: `Trạng thái ${status} không hợp lệ!`
+    });
+  }
+};
+
+// [POST] /api/v1/tasks/create
+module.exports.create = async (req, res) => {
+  const task = new Task(req.body);
+  await task.save();
+
+  res.json({
+    code: 200,
+    message: "Tạo công việc thành công!"
+  });
+}
