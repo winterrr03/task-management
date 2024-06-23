@@ -4,7 +4,13 @@ const paginationHelper = require("../../../helpers/pagination.helper");
 
 // [GET] /api/v1/tasks
 module.exports.index = async (req, res) => {
+  const userId = res.locals.user.id;
+
   const find = {
+    $or: [
+      { createdBy: userId },
+      { listUser: userId }
+    ],
     deleted: false,
   };
 
@@ -38,7 +44,11 @@ module.exports.index = async (req, res) => {
                 .skip(objectPagination.skip)
                 .sort(sort);
 
-  res.json(tasks);
+  res.json({
+    code: 200,
+    message: "Thành công",
+    tasks: tasks
+  });
 };
 
 // [GET] /api/v1/tasks/detail/:id
@@ -104,6 +114,7 @@ module.exports.changeMulti = async (req, res) => {
 
 // [POST] /api/v1/tasks/create
 module.exports.create = async (req, res) => {
+  req.body.createdBy = res.locals.user.id;
   const task = new Task(req.body);
   await task.save();
 
